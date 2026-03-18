@@ -160,7 +160,7 @@ function renderDashboard(dataPayload) {
             container.appendChild(div);
 
             let ctx = document.getElementById(`canvas_${index}`).getContext('2d');
-            let targetLine = Array(kpi.periods.length).fill(kpi.target);
+            let targetLine = kpi.targetLines; // ใช้ข้อมูลเป้าหมายที่คำนวณแยกตามปีมาจาก API
 
             let chart = new Chart(ctx, {
                 type: 'line',

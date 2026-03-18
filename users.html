@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการผู้ใช้งาน - JVL RCA Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-content { background: #fff; border-radius: 12px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-header h3 { margin: 0; color: var(--primary); }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+        .checkbox-container { border: 1px solid #ccd6e0; border-radius: 6px; padding: 15px; max-height: 250px; overflow-y: auto; background: #f8fafd; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .checkbox-item { font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .role-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; background: #e8f4fd; color: var(--primary); }
+        .role-God { background: #ffebee; color: #c62828; }
+    </style>
+</head>
+<body class="app-bg">
+    
+    <div class="content-container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="page-title" style="margin: 0;">👥 จัดการผู้ใช้งานและสิทธิ์การเข้าถึง (User Management)</h2>
+                <button class="btn btn-primary" onclick="openUserModal()" style="width: auto; margin: 0;">+ เพิ่มผู้ใช้ใหม่</button>
+            </div>
+
+            <div id="loader" style="color: var(--secondary); margin-bottom: 15px;">กำลังโหลดข้อมูล...</div>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>รหัสผ่าน</th>
+                            <th>บทบาท (Role)</th>
+                            <th>การเข้าถึงหมวดหมู่ (Tags)</th>
+                            <th style="text-align: center;">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="userModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">เพิ่มผู้ใช้ใหม่</h3>
+                <button class="close-btn" onclick="closeUserModal()">×</button>
+            </div>
+            
+            <div id="modalError" style="color:#dc3545; margin-bottom: 15px; font-weight: 500;"></div>
+            <input type="hidden" id="editMode" value="false">
+
+            <div class="filter-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 15px; padding: 10px;">
+                <div class="form-group">
+                    <label>Username (ห้ามเว้นวรรค)</label>
+                    <input type="text" id="uName" placeholder="เช่น user_nurse" required>
+                </div>
+                <div class="form-group">
+                    <label>รหัสผ่าน (Password)</label>
+                    <input type="text" id="uPass" placeholder="เช่น 123456" required>
+                </div>
+            </div>
+
+            <div class="form-group" style="padding: 0 10px;">
+                <label>บทบาท (Role)</label>
+                <select id="uRole">
+                    <option value="User">User (บันทึกข้อมูลได้ตามหมวดที่รับผิดชอบ)</option>
+                    <option value="Admin">Admin (จัดการหมวดหมู่และ KPI ได้ + บันทึกได้)</option>
+                    <option value="God Admin">God Admin (ทำได้ทุกอย่างในระบบ)</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="padding: 10px;">
+                <label style="display: flex; justify-content: space-between;">
+                    <span>📌 กำหนดสิทธิ์การเข้าถึงหมวดหมู่ (Tags)</span>
+                    <label style="cursor: pointer; color: var(--secondary);"><input type="checkbox" id="checkAllTags" onchange="toggleAllTags(this)"> เลือกทั้งหมด (ALL)</label>
+                </label>
+                <div id="tagCheckboxes" class="checkbox-container">
+                    </div>
+            </div>
+
+            <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-logout" onclick="closeUserModal()" style="width: auto; border: 1px solid #ccc;">ยกเลิก</button>
+                <button class="btn btn-primary" onclick="saveUserData()" id="btnSaveUser" style="width: auto; padding: 10px 30px;">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/users.js"></script>
+</body>
+</html>

@@ -91,6 +91,10 @@ function updateL4Dropdown() {
 function clearDashboard() {
     document.getElementById('summaryTableArea').style.display = 'none';
     document.getElementById('categoryDescDisplay').style.display = 'none';
+    
+    // 🟢 เพิ่มบรรทัดนี้ เพื่อสั่งล้างตารางทุกครั้งที่มีการเปลี่ยน Dropdown
+    document.getElementById('dashTableBody').innerHTML = ''; 
+    
     document.getElementById('chartsContainer').innerHTML = '';
     activeCharts.forEach(c => c.destroy());
     activeCharts = [];

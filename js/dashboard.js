@@ -148,7 +148,7 @@ function renderDashboard(dataPayload) {
             <tr>
                 <td>${kpi.id}</td>
                 <td>${kpi.name}</td>
-                <td>${kpi.target}</td>
+                <td>${kpi.targetDisplay}</td>
                 <td><strong>${kpi.latestValue}</strong></td>
                 <td style="color:${color}; font-weight:bold;">${kpi.status}</td>
             </tr>`;

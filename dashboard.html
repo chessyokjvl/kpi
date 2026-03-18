@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - JVL KPI Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="app-bg">
+    
+    <div class="content-container">
+        <div class="card">
+            <h2 class="page-title">สรุปผลการดำเนินงานระดับองค์กร</h2>
+            
+            <div class="filter-row">
+                <div class="form-group">
+                    <label>1. หมวดหมู่หลัก (L1)</label>
+                    <select id="filterL1"></select>
+                </div>
+                <div class="form-group">
+                    <label>2. หมวดหมู่รอง (L2)</label>
+                    <select id="filterL2" disabled><option value="">-- ทั้งหมดใน L1 --</option></select>
+                </div>
+                <div class="form-group">
+                    <label>3. หมวดหมู่ย่อย (L3)</label>
+                    <select id="filterL3" disabled><option value="">-- ทั้งหมดใน L2 --</option></select>
+                </div>
+                <div class="form-group">
+                    <label>4. ระดับย่อยสุด (L4)</label>
+                    <select id="filterL4" disabled><option value="">-- ทั้งหมดใน L3 --</option></select>
+                </div>
+            </div>
+
+            <div id="categoryDescDisplay" class="alert-info"></div>
+            
+            <div id="loader" style="color: var(--secondary); text-align: center; font-weight: bold; margin-bottom: 20px; display: none;">กำลังประมวลผลข้อมูล...</div>
+
+            <div id="summaryTableArea" class="table-responsive" style="display:none;">
+                <table id="dashTable">
+                    <thead>
+                        <tr>
+                            <th>รหัส</th>
+                            <th>ชื่อตัวชี้วัด</th>
+                            <th>เป้าหมาย</th>
+                            <th>ผลงานล่าสุด</th>
+                            <th>สถานะเบื้องต้น</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashTableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="chartsContainer" class="chart-grid"></div>
+
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

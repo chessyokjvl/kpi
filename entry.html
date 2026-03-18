@@ -24,14 +24,22 @@
                 </select>
             </div>
             
-            <div class="filter-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+            <div class="filter-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 0;">
                 <div class="form-group">
-                    <label>งวดเวลา (เช่น 2026-01)</label>
-                    <input type="text" id="period" placeholder="YYYY-MM" required>
+                    <label>งวดเวลา (YYYY-MM)</label>
+                    <input type="text" id="period" placeholder="เช่น 2026-01" required>
                 </div>
                 <div class="form-group">
-                    <label>ผลงานที่ทำได้ (Actual Value)</label>
-                    <input type="number" step="0.01" id="actualValue" required>
+                    <label>ผลงาน / ตัวตั้ง (A)</label>
+                    <input type="number" step="0.01" id="valA" oninput="calculateResult()" required>
+                </div>
+                <div class="form-group">
+                    <label>ตัวหาร (B) <span id="hintB" style="font-weight:normal; font-size:12px; color:#666;"></span></label>
+                    <input type="number" step="0.01" id="valB" oninput="calculateResult()">
+                </div>
+                <div class="form-group">
+                    <label>ผลลัพธ์ <span id="unitDisplay" style="color:var(--secondary);"></span></label>
+                    <input type="number" id="actualValue" readonly style="background-color: #eef2f5; font-weight: bold; color: var(--primary);">
                 </div>
             </div>
 
@@ -54,14 +62,14 @@
                         <tr>
                             <th>งวดเวลา</th>
                             <th>ตัวชี้วัด</th>
-                            <th>ผลงาน</th>
+                            <th>ตัวตั้ง (A)</th>
+                            <th>ตัวหาร (B)</th>
+                            <th>ผลลัพธ์</th>
                             <th>บันทึกโดย</th>
-                            <th>เวลา (Timestamp)</th>
                             <th style="text-align: center;">จัดการ</th>
                         </tr>
                     </thead>
-                    <tbody id="historyTableBody">
-                        </tbody>
+                    <tbody id="historyTableBody"></tbody>
                 </table>
             </div>
         </div>

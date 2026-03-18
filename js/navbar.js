@@ -21,9 +21,14 @@ function renderNavbar() {
     // ทุกคนเห็น Dashboard
     navLinks += `<a href="dashboard.html" class="${path.includes('dashboard') ? 'active' : ''}">📊 Dashboard & Run Chart</a>`;
     
-    // เฉพาะ Admin เห็นหน้าตั้งค่า
+    // เฉพาะ Admin และ God Admin
     if (userRole === 'God Admin' || userRole === 'Admin') {
-        navLinks += `<a href="settings.html" class="${path.includes('settings') ? 'active' : ''}">⚙️ จัดการหมวดหมู่</a>`;
+        navLinks += `<a href="settings.html" class="${path.includes('settings') ? 'active' : ''}">⚙️ จัดการหมวดหมู่ตัวชี้วัด</a>`;
+    }
+    
+    // เฉพาะ God Admin
+    if (userRole === 'God Admin') {
+        navLinks += `<a href="users.html" class="${path.includes('users') ? 'active' : ''}">👥 จัดการผู้ใช้งาน</a>`;
     }
 
     const navHTML = `

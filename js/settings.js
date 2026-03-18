@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadData();
 });
 
+// --- ส่วนที่ 1: โหลดและแสดงข้อมูล ---
 async function loadData() {
     document.getElementById('loader').style.display = 'block';
     try {
@@ -40,7 +41,7 @@ function renderTable() {
     }
     
     allIndicators.forEach(ind => {
-        // ใช้ JSON.stringify ช่วยส่ง Object ผ่าน Onclick
+        // Encode Object เป็น String เพื่อส่งผ่านปุ่ม Onclick
         let safeData = encodeURIComponent(JSON.stringify(ind));
         tbody.innerHTML += `
             <tr>
@@ -48,7 +49,7 @@ function renderTable() {
                 <td>${ind.name}</td>
                 <td>${ind.unit}</td>
                 <td>${ind.multiplier}</td>
-                <td style="color:var(--primary); font-weight:bold;">${ind.operator}</td>
+                <td style="color:var(--primary); font-weight:bold; font-size:16px;">${ind.operator}</td>
                 <td style="text-align: center; white-space: nowrap;">
                     <button onclick="openModal('${safeData}')" style="background:#ffc107; color:#000; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; margin-right:5px;">แก้ไข</button>
                     <button onclick="deleteInd('${ind.id}')" style="background:#dc3545; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">ลบ</button>
@@ -63,7 +64,7 @@ function renderCategoryCheckboxes() {
     container.innerHTML = '';
     
     masterCategories.forEach(cat => {
-        // สร้าง Label ให้ดูง่าย เช่น [HA] HA ตอน II - HA ตอน II-2
+        // สร้าง Label ให้ดูง่าย (L1 > L2 > L3 > L4)
         let path = [cat.l1, cat.l2, cat.l3, cat.l4].filter(Boolean).join(' > ');
         if(cat.desc) path += ` (${cat.desc})`;
         
@@ -75,7 +76,45 @@ function renderCategoryCheckboxes() {
     });
 }
 
-// เปิด Modal (แยกโหมดเพิ่มใหม่ / แก้ไข)
+// --- ส่วนที่ 2: เพิ่มหมวดหมู่ใหม่ (Category) ---
+async function saveCategory() {
+    let l1 = document.getElementById('catL1').value.trim();
+    let l2 = document.getElementById('catL2').value.trim();
+    let l3 = document.getElementById('catL3').value.trim();
+    let l4 = document.getElementById('catL4').value.trim();
+    let desc = document.getElementById('catDesc').value.trim();
+    
+    if(!l1) {
+        alert('กรุณาระบุหมวดหมู่หลัก (L1) อย่างน้อย 1 ช่อง');
+        return;
+    }
+    
+    document.getElementById('catStatus').innerText = "กำลังบันทึก...";
+    
+    try {
+        const res = await callAPI({
+            action: 'saveNewCategory',
+            username: username,
+            l1: l1, l2: l2, l3: l3, l4: l4, desc: desc
+        });
+        
+        document.getElementById('catStatus').innerText = res;
+        document.getElementById('catL1').value = '';
+        document.getElementById('catL2').value = '';
+        document.getElementById('catL3').value = '';
+        document.getElementById('catL4').value = '';
+        document.getElementById('catDesc').value = '';
+        
+        loadData(); // รีโหลดข้อมูลเพื่อให้ Checkbox หมวดหมู่ใหม่โผล่ขึ้นมาทันที
+        
+        setTimeout(() => document.getElementById('catStatus').innerText = "", 4000);
+    } catch (error) {
+        alert("เกิดข้อผิดพลาด: " + error.message);
+        document.getElementById('catStatus').innerText = "";
+    }
+}
+
+// --- ส่วนที่ 3: จัดการ Modal ตัวชี้วัด (Indicator) ---
 function openModal(encodedData = null) {
     document.getElementById('indicatorModal').style.display = 'flex';
     document.getElementById('modalError').innerText = '';
@@ -95,19 +134,23 @@ function openModal(encodedData = null) {
         document.getElementById('indUnit').value = ind.unit;
         document.getElementById('indMultiplier').value = ind.multiplier;
         
-        // แก้ไข Operator ที่มี ' นำหน้าจาก Google Sheet ให้แสดงผลปกติ
+        // เซ็ตค่า Operator (ลบเครื่องหมาย ' ที่ติดมาจาก Google Sheet ออกก่อนโชว์)
         let opValue = ind.operator.toString().replace(/'/g, "");
         document.getElementById('indOperator').value = opValue;
         
         // ติ๊ก Checkbox ตาม Mapped Categories
-        ind.categories.forEach(catId => {
-            let cb = document.querySelector(`input[name="catMap"][value="${catId}"]`);
-            if (cb) cb.checked = true;
-        });
+        if (ind.categories && Array.isArray(ind.categories)) {
+            ind.categories.forEach(catId => {
+                let cb = document.querySelector(`input[name="catMap"][value="${catId}"]`);
+                if (cb) cb.checked = true;
+            });
+        }
         
         // ดึงเป้าหมายรายปีมาสร้างเป็นแถว
-        for (const [year, target] of Object.entries(ind.targets)) {
-            addYearlyTargetRow(year, target);
+        if (ind.targets) {
+            for (const [year, target] of Object.entries(ind.targets)) {
+                addYearlyTargetRow(year, target);
+            }
         }
     } else {
         // โหมดเพิ่มใหม่
@@ -115,9 +158,9 @@ function openModal(encodedData = null) {
         document.getElementById('indId').value = '';
         document.getElementById('indName').value = '';
         document.getElementById('indUnit').value = '';
-        document.getElementById('indMultiplier').value = '100'; // Default
-        document.getElementById('indOperator').value = '>='; // Default
-        addYearlyTargetRow('', ''); // แถมแถวว่างให้ 1 แถว
+        document.getElementById('indMultiplier').value = '100'; // ค่าตั้งต้น (ร้อยละ)
+        document.getElementById('indOperator').value = '>='; // ค่าตั้งต้น
+        addYearlyTargetRow('', ''); // แถมแถวว่างให้ 1 แถวสำหรับกรอกปีแรก
     }
 }
 
@@ -127,11 +170,11 @@ function closeModal() {
 
 function addYearlyTargetRow(year, target) {
     let container = document.getElementById('yearlyTargetsArea');
-    let rowId = 'row_' + new Date().getTime() + Math.random(); // สร้าง ID ป้องกันการซ้ำ
+    let rowId = 'row_' + new Date().getTime() + Math.random(); 
     
     let rowHTML = `
         <div class="target-row" id="${rowId}">
-            <input type="number" class="t-year" placeholder="ปี เช่น 2026" value="${year}" style="width: 120px;" required>
+            <input type="number" class="t-year" placeholder="ปี พ.ศ. เช่น 2569" value="${year}" style="width: 150px;" required>
             <input type="number" step="0.01" class="t-val" placeholder="เป้าหมาย เช่น 85" value="${target}" style="width: 150px;" required>
             <button type="button" class="btn-remove-target" onclick="document.getElementById('${rowId}').remove()">ลบ</button>
         </div>
@@ -139,7 +182,7 @@ function addYearlyTargetRow(year, target) {
     container.insertAdjacentHTML('beforeend', rowHTML);
 }
 
-// รวบรวมข้อมูลและส่ง API
+// แปลงข้อมูลและส่งเข้า API
 async function saveIndicatorData() {
     let indId = document.getElementById('indId').value;
     let name = document.getElementById('indName').value.trim();
@@ -148,17 +191,17 @@ async function saveIndicatorData() {
     let operator = document.getElementById('indOperator').value;
     
     if (!name || !multiplier) {
-        document.getElementById('modalError').innerText = "กรุณากรอกชื่อและตัวคูณให้ครบถ้วน";
+        document.getElementById('modalError').innerText = "กรุณากรอกชื่อตัวชี้วัดและตัวคูณให้ครบถ้วน";
         return;
     }
 
-    // 1. ดึงค่า Checkbox ที่ถูกติ๊กมาใส่ Array
+    // ดึงค่า ID ของหมวดหมู่ที่ถูกติ๊ก
     let selectedCats = [];
     document.querySelectorAll('input[name="catMap"]:checked').forEach(cb => {
         selectedCats.push(cb.value);
     });
 
-    // 2. ดึงค่าเป้าหมายรายปีมาประกอบเป็น JSON Object
+    // ดึงค่าเป้าหมายรายปี แปลงเป็น Object { "2569": 85 }
     let targetsObj = {};
     let targetRows = document.querySelectorAll('.target-row');
     targetRows.forEach(row => {
@@ -169,18 +212,17 @@ async function saveIndicatorData() {
         }
     });
 
-    // ประกอบร่างข้อมูลส่ง API
     let payload = {
         username: username,
         action: indId ? 'updateIndicator' : 'saveIndicator',
-        indId: indId, // จะถูกใช้เฉพาะตอน Update
+        indId: indId,
         indData: {
             name: name,
             unit: unit,
             multiplier: multiplier,
             operator: operator,
-            categories: selectedCats,
-            targets: targetsObj
+            categories: selectedCats, // Array -> ระบบหลังบ้านจะ JSON.stringify ให้
+            targets: targetsObj       // Object -> ระบบหลังบ้านจะ JSON.stringify ให้
         }
     };
 
@@ -200,7 +242,7 @@ async function saveIndicatorData() {
 }
 
 async function deleteInd(indId) {
-    if (confirm("การลบตัวชี้วัด จะไม่สามารถกู้คืนได้ แน่ใจหรือไม่?")) {
+    if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบตัวชี้วัดนี้? ข้อมูลเป้าหมายและการ Mapping จะถูกลบทิ้งทั้งหมด")) {
         try {
             const responseMsg = await callAPI({ action: 'deleteIndicator', username: username, indId: indId });
             alert(responseMsg);

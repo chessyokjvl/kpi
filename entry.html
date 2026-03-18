@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการข้อมูล KPI - JVL RCA Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="app-bg">
+    
+    <div class="content-container">
+        
+        <div class="card">
+            <h2 class="page-title" id="formTitle">📝 บันทึกผลการดำเนินงานใหม่</h2>
+            
+            <input type="hidden" id="editDataId" value="">
+            <div id="entryError" style="color:#dc3545; margin-bottom: 15px; font-weight: 500;"></div>
+            
+            <div class="form-group">
+                <label>ตัวชี้วัดที่รับผิดชอบ</label>
+                <select id="kpiSelect">
+                    <option value="">-- โหลดข้อมูลตัวชี้วัด... --</option>
+                </select>
+            </div>
+            
+            <div class="filter-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+                <div class="form-group">
+                    <label>งวดเวลา (เช่น 2026-01)</label>
+                    <input type="text" id="period" placeholder="YYYY-MM" required>
+                </div>
+                <div class="form-group">
+                    <label>ผลงานที่ทำได้ (Actual Value)</label>
+                    <input type="number" step="0.01" id="actualValue" required>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="submitData()" id="btnSave" style="width: auto; padding: 10px 30px;">บันทึกข้อมูล</button>
+                <button class="btn btn-logout" onclick="cancelEdit()" id="btnCancel" style="display: none; border: 1px solid #dc3545;">ยกเลิกการแก้ไข</button>
+            </div>
+            
+            <div id="saveStatus" style="margin-top: 15px; color: #28a745; font-weight: 600;"></div>
+        </div>
+
+        <div class="card">
+            <h2 class="page-title">🕒 ประวัติการบันทึกข้อมูลของคุณ</h2>
+            
+            <div id="tableLoader" style="color: var(--secondary); margin-bottom: 15px;">กำลังดึงประวัติข้อมูล...</div>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>งวดเวลา</th>
+                            <th>ตัวชี้วัด</th>
+                            <th>ผลงาน</th>
+                            <th>บันทึกโดย</th>
+                            <th>เวลา (Timestamp)</th>
+                            <th style="text-align: center;">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/entry.js"></script>
+</body>
+</html>

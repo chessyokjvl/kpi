@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JVL KPI Management - เข้าสู่ระบบ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #003366; /* น้ำเงินเข้ม */
+            --secondary: #005bb5; /* ฟ้าสว่าง */
+            --gold: #d4af37; /* ทอง */
+            --bg-light: #f4f7f6;
+            --text-dark: #333;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* แบ็คกราวน์ไล่สี ฟ้า-น้ำเงิน */
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .login-box {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+            /* ขอบด้านบนสีทองเพิ่มความหรูหรา */
+            border-top: 5px solid var(--gold);
+        }
+
+        .hospital-logo {
+            width: 90px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        .login-box h2 {
+            margin: 0 0 5px;
+            color: var(--primary);
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Prompt', sans-serif;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(0, 91, 181, 0.1);
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 13px;
+            margin-bottom: 15px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Prompt', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-bottom: 12px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 51, 102, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: #002244;
+            transform: translateY(-1px);
+        }
+
+        .btn-guest {
+            background: transparent;
+            color: var(--gold);
+            border: 2px solid var(--gold);
+        }
+
+        .btn-guest:hover {
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #eee;
+        }
+
+        .divider:not(:empty)::before { margin-right: .5em; }
+        .divider:not(:empty)::after { margin-left: .5em; }
+
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-box">
+            <img src="https://www.rploei.go.th/ec2/wp-content/uploads/2017/08/cropped-cropped-cropped-3.png" alt="Logo" class="hospital-logo">
+            <h2>JVL KPI Management</h2>
+            <p class="subtitle">ระบบบริหารจัดการตัวชี้วัด<br>โรงพยาบาลจิตเวชเลยราชนครินทร์</p>
+            
+            <div id="loginError" class="error-message"></div>
+
+            <div class="form-group">
+                <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน (Username)" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <input type="password" id="password" placeholder="รหัสผ่าน (Password)">
+            </div>
+
+            <button class="btn btn-primary" id="loginBtn" onclick="processLogin()">เข้าสู่ระบบ</button>
+            
+            <div class="divider">หรือ</div>
+            
+            <button class="btn btn-guest" onclick="processGuest()">เข้าชมแบบ Guest</button>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // ฟังก์ชันตรวจจับการกดปุ่ม Enter
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                processLogin();
+            }
+        });
+
+        document.getElementById('username').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('password').focus();
+            }
+        });
+
+        // ฟังก์ชันเข้าสู่ระบบด้วย Username
+        async function processLogin() {
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            const errorDiv = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+
+            if (!u || !p) {
+                errorDiv.innerText = "กรุณากรอก Username และ Password ให้ครบถ้วน";
+                return;
+            }
+
+            errorDiv.innerText = "";
+            btn.innerText = "กำลังตรวจสอบ...";
+            btn.disabled = true;
+
+            try {
+                const response = await callAPI({ action: 'login', username: u, password: p });
+                
+                if (response.success) {
+                    // บันทึกข้อมูลลงใน Session Browser
+                    sessionStorage.setItem('kpi_username', response.username);
+                    sessionStorage.setItem('kpi_role', response.role);
+                    
+                    // เปลี่ยนหน้าไปที่ Dashboard
+                    window.location.href = 'dashboard.html';
+                } else {
+                    errorDiv.innerText = response.message || "รหัสผ่านไม่ถูกต้อง";
+                    btn.innerText = "เข้าสู่ระบบ";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                errorDiv.innerText = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
+                btn.innerText = "เข้าสู่ระบบ";
+                btn.disabled = false;
+            }
+        }
+
+        // ฟังก์ชันเข้าสู่ระบบแบบ Guest
+        function processGuest() {
+            sessionStorage.setItem('kpi_username', 'Guest');
+            sessionStorage.setItem('kpi_role', 'Guest');
+            window.location.href = 'dashboard.html';
+        }
+
+        // เช็คว่าถ้าเคย Login ไว้แล้ว ให้ข้ามหน้านี้ไปเลย
+        window.onload = function() {
+            if (sessionStorage.getItem('kpi_username')) {
+                window.location.href = 'dashboard.html';
+            }
+        };
+    </script>
+</body>
+</html>

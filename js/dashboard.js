@@ -88,13 +88,15 @@ function updateL4Dropdown() {
     loadDashboardData();
 }
 
+// 🟢 ฟังก์ชันล้างหน้าจอ ป้องกันข้อมูลเก่าโผล่ซ้ำ
 function clearDashboard() {
     document.getElementById('summaryTableArea').style.display = 'none';
     document.getElementById('categoryDescDisplay').style.display = 'none';
     
-    // 🟢 เพิ่มบรรทัดนี้ เพื่อสั่งล้างตารางทุกครั้งที่มีการเปลี่ยน Dropdown
+    // 🟢 ล้างข้อมูลตาราง
     document.getElementById('dashTableBody').innerHTML = ''; 
     
+    // 🟢 ล้างข้อมูลกราฟ
     document.getElementById('chartsContainer').innerHTML = '';
     activeCharts.forEach(c => c.destroy());
     activeCharts = [];
@@ -109,6 +111,8 @@ async function loadDashboardData() {
     let l4 = document.getElementById('filterL4').value;
 
     document.getElementById('loader').style.display = 'block';
+    
+    // ล้างกระดานทุกครั้งก่อนจะดึงข้อมูลใหม่
     clearDashboard();
 
     try {
@@ -131,9 +135,14 @@ function renderDashboard(dataPayload) {
     let container = document.getElementById('chartsContainer');
     let descArea = document.getElementById('categoryDescDisplay');
     
+    // 🟢 ป้องกันเหนียวอีกชั้น ล้างตารางก่อนวาดเสมอ
+    tbody.innerHTML = ''; 
+    
     if (dataPayload.description) {
         descArea.innerHTML = `<strong>ℹ️ คำอธิบายหมวดหมู่:</strong> ${dataPayload.description}`;
         descArea.style.display = 'block';
+    } else {
+        descArea.style.display = 'none';
     }
     
     let kpiList = dataPayload.kpiList;
@@ -148,6 +157,7 @@ function renderDashboard(dataPayload) {
         let isPass = kpi.status === 'ผ่านเป้า';
         let color = isPass ? '#28a745' : (kpi.latestValue === '-' ? '#333' : '#dc3545');
         
+        // วาดแถวลงในตาราง
         tbody.innerHTML += `
             <tr>
                 <td>${kpi.id}</td>
@@ -157,6 +167,7 @@ function renderDashboard(dataPayload) {
                 <td style="color:${color}; font-weight:bold;">${kpi.status}</td>
             </tr>`;
 
+        // วาดกราฟ Run Chart ถ้ามีข้อมูลผลงาน
         if(kpi.periods.length > 0) {
             let div = document.createElement('div');
             div.className = 'chart-box';
@@ -164,7 +175,9 @@ function renderDashboard(dataPayload) {
             container.appendChild(div);
 
             let ctx = document.getElementById(`canvas_${index}`).getContext('2d');
-            let targetLine = kpi.targetLines; // ใช้ข้อมูลเป้าหมายที่คำนวณแยกตามปีมาจาก API
+            
+            // ใช้ kpi.targetLines จากหลังบ้าน เพื่อให้กราฟเส้นเป้าหมายเปลี่ยนระดับตามปีได้
+            let targetLineData = kpi.targetLines;
 
             let chart = new Chart(ctx, {
                 type: 'line',
@@ -172,7 +185,7 @@ function renderDashboard(dataPayload) {
                     labels: kpi.periods,
                     datasets: [
                         { label: 'ผลงานจริง', data: kpi.values, borderColor: '#005bb5', backgroundColor: '#005bb5', tension: 0, pointRadius: 4, fill: false },
-                        { label: 'เป้าหมาย', data: targetLine, borderColor: '#dc3545', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false }
+                        { label: 'เป้าหมาย', data: targetLineData, borderColor: '#dc3545', borderWidth: 2, borderDash: [5, 5], pointRadius: 0, fill: false, stepLine: true }
                     ]
                 },
                 options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { position: 'bottom' } } }

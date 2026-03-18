@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่าตัวชี้วัด - JVL RCA Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* CSS สำหรับ Modal (Pop-up) เฉพาะหน้านี้ */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #fff; border-radius: 12px; width: 90%; max-width: 700px;
+            max-height: 90vh; overflow-y: auto; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .modal-header h3 { margin: 0; color: var(--primary); }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
+        .close-btn:hover { color: #dc3545; }
+        
+        /* Checkbox Box */
+        .checkbox-container {
+            border: 1px solid #ccd6e0; border-radius: 6px; padding: 15px;
+            max-height: 200px; overflow-y: auto; background: #f8fafd;
+        }
+        .checkbox-item { display: block; margin-bottom: 8px; font-size: 14px; cursor: pointer; }
+        
+        /* Dynamic Target Row */
+        .target-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; }
+        .target-row input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-remove-target { background: #ffebee; color: #dc3545; border: 1px solid #ffcdd2; padding: 8px 12px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body class="app-bg">
+    
+    <div class="content-container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="page-title" style="margin: 0;">⚙️ จัดการฐานข้อมูลตัวชี้วัด (Master Data)</h2>
+                <button class="btn btn-primary" onclick="openModal()" style="width: auto; margin: 0;">+ เพิ่มตัวชี้วัดใหม่</button>
+            </div>
+
+            <div id="loader" style="color: var(--secondary); margin-bottom: 15px;">กำลังโหลดข้อมูล...</div>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>รหัส</th>
+                            <th>ชื่อตัวชี้วัด</th>
+                            <th>หน่วย</th>
+                            <th>ตัวคูณ</th>
+                            <th>เกณฑ์ (Operator)</th>
+                            <th style="text-align: center;">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="indicatorsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="indicatorModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">เพิ่มตัวชี้วัดใหม่</h3>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            
+            <div id="modalError" style="color:#dc3545; margin-bottom: 15px; font-weight: 500;"></div>
+            <input type="hidden" id="indId" value="">
+
+            <div class="form-group">
+                <label>ชื่อตัวชี้วัด</label>
+                <input type="text" id="indName" placeholder="เช่น อัตราความคลาดเคลื่อนทางยา" required>
+            </div>
+
+            <div class="filter-row" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 15px; padding: 10px;">
+                <div class="form-group">
+                    <label>หน่วย (Unit)</label>
+                    <input type="text" id="indUnit" placeholder="เช่น ร้อยละ, ครั้ง">
+                </div>
+                <div class="form-group">
+                    <label>ตัวคูณ (Multiplier)</label>
+                    <input type="number" id="indMultiplier" placeholder="เช่น 1, 100, 1000">
+                </div>
+                <div class="form-group">
+                    <label>เกณฑ์ประเมิน (Operator)</label>
+                    <select id="indOperator">
+                        <option value=">=">&gt;= (ไม่น้อยกว่า)</option>
+                        <option value="<=">&lt;= (ไม่เกิน)</option>
+                        <option value="=">= (เท่ากับ)</option>
+                        <option value=">">&gt; (มากกว่า)</option>
+                        <option value="<">&lt; (น้อยกว่า)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📌 ผูกหมวดหมู่ระบบ/มาตรฐาน (Mapping)</label>
+                <div id="categoryCheckboxes" class="checkbox-container">
+                    </div>
+            </div>
+
+            <div class="form-group">
+                <label>🎯 เป้าหมายรายปีงบประมาณ (Dynamic Targets)</label>
+                <div id="yearlyTargetsArea" style="background: #fdfbf7; border: 1px dashed #d4af37; padding: 15px; border-radius: 6px;">
+                    </div>
+                <button type="button" onclick="addYearlyTargetRow('', '')" style="margin-top: 10px; background:#e8f4fd; color:var(--primary); border:none; padding:8px 15px; border-radius:4px; cursor:pointer;">+ เพิ่มเป้าหมายปีงบประมาณ</button>
+            </div>
+
+            <div style="margin-top: 25px; display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-logout" onclick="closeModal()" style="width: auto; border: 1px solid #ccc;">ยกเลิก</button>
+                <button class="btn btn-primary" onclick="saveIndicatorData()" id="btnSaveModal" style="width: auto; padding: 10px 30px;">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/navbar.js"></script>
+    <script src="js/settings.js"></script>
+</body>
+</html>
